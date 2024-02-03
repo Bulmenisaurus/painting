@@ -45,7 +45,6 @@ const randomOffset = (p: Coordinate, id: number, timing: number): Coordinate => 
 };
 
 const rectangles = (ctx: CanvasRenderingContext2D, time: number) => {
-    // https://www.desmos.com/calculator/toe5sw3rau
     const packed: PackedRectangle[] = [
         [50, -10, 150, 25, 0.5],
         [240, 20, 80, 25, -0.05],
@@ -95,21 +94,28 @@ interface Triangle {
 
 type PackedTriangle = [number, number, number, number, number, number, number];
 
+// https://www.desmos.com/calculator/toe5sw3rau
 const rotateT = (t: Triangle, angle: number): Triangle => {
-    return t;
+    const middlePoint = { x: (t.v1.x + t.v2.x + t.v3.x) / 3, y: (t.v1.y + t.v2.y + t.v3.y) / 3 };
+    return {
+        v1: rotateAround(middlePoint, t.v1, angle),
+        v2: rotateAround(middlePoint, t.v2, angle),
+        v3: rotateAround(middlePoint, t.v3, angle),
+        style: t.style,
+    };
 };
 
 const triangles = (ctx: CanvasRenderingContext2D, time: number) => {
     const packed: PackedTriangle[] = [
-        [10, 205, 60, 230, 40, 300, 0],
-        [40, 240, 10, 270, 50, 280, 0],
-        [40, 260, 42, 297, 70, 290, 0],
-        [30, 280, 70, 285, 75, 335, 0],
-        [55, 285, 75, 275, 75, 315, 0],
-        [55, 305, 85, 290, 80, 315, 0],
+        [10, 205, 60, 230, 40, 300, 5],
+        [40, 240, 10, 270, 50, 280, 3],
+        [40, 260, 42, 297, 70, 290, 2.5],
+        [30, 280, 70, 285, 75, 335, 2],
+        [55, 285, 75, 275, 75, 315, 1.5],
+        [55, 305, 85, 290, 80, 315, 1],
 
-        [25, 390, 25, 375, 37, 382, 1],
-        [20, 390, 30, 385, 29, 396, 0],
+        [25, 390, 25, 375, 37, 382, 0.5],
+        [20, 390, 30, 385, 29, 396, 0.1],
         // multiply coordinates by two
     ].map((p) => p.map((n) => n * 2) as PackedTriangle);
 
@@ -121,7 +127,7 @@ const triangles = (ctx: CanvasRenderingContext2D, time: number) => {
     }));
 
     for (let b of tris) {
-        const r = rotateT(b, time);
+        const r = rotateT(b, time / (3000 * b.style));
 
         ctx.fillStyle = '#FFF';
 
