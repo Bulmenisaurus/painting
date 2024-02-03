@@ -1,27 +1,11 @@
 import { Perlin } from './perlin';
 
-export const WIDTH = 300;
-export const HEIGHT = 425;
+export const WIDTH = 300 * 2;
+export const HEIGHT = 425 * 2;
 
 export type Coordinate = { x: number; y: number };
 
-const background = (ctx: CanvasRenderingContext2D) => {
-    const perlin = new Perlin(50, 50, 0);
-    console.log(perlin.getPixel(0, 5.1));
-    for (let x = 0; x < WIDTH; x++) {
-        for (let y = 0; y < HEIGHT; y++) {
-            let pixelStyle = (perlin.getPixel(x / 50, y / 50) + 1) / 2;
-            // convert [0, 1] to [startAlpha, endAlpha]
-            const startAlpha = 170;
-            const endAlpha = 250;
-
-            const rgbValue = pixelStyle * (endAlpha - startAlpha) + startAlpha;
-
-            ctx.fillStyle = `rgb(${rgbValue}, ${rgbValue}, ${rgbValue})`;
-            ctx.fillRect(x, y, 1, 1);
-        }
-    }
-};
+const background = (ctx: CanvasRenderingContext2D) => {};
 
 interface Rectangle {
     x: number;
@@ -53,7 +37,14 @@ const rotateAround = (origin: Coordinate, p: Coordinate, angle: number): Coordin
     return p;
 };
 
-const rectangles = (ctx: CanvasRenderingContext2D) => {
+const randomOffset = (p: Coordinate, id: number, timing: number): Coordinate => {
+    return {
+        x: p.x + Math.cos(timing / 1000 + id) * 10,
+        y: p.y + Math.sin(timing / 1000 - id) * 10,
+    };
+};
+
+const rectangles = (ctx: CanvasRenderingContext2D, time: number) => {
     // https://www.desmos.com/calculator/toe5sw3rau
     const packed: PackedRectangle[] = [
         [50, -10, 150, 25, 0.5],
@@ -62,7 +53,7 @@ const rectangles = (ctx: CanvasRenderingContext2D) => {
         [250, 70, 90, 25, 0.8],
         [190, 120, 90, 25, 0.7],
         [165, 180, 90, 25, 1.15],
-    ];
+    ].map((p) => [p[0] * 2, p[1] * 2, p[2] * 2, p[3] * 2, p[4]] as PackedRectangle);
 
     const rects: Rectangle[] = packed.map((p) => ({
         x: p[0],
@@ -72,7 +63,7 @@ const rectangles = (ctx: CanvasRenderingContext2D) => {
         rotation: p[4],
     }));
 
-    ctx.fillStyle = '#73f0f5';
+    ctx.fillStyle = '#fff';
 
     for (let r of rects) {
         let vertices = [
@@ -80,7 +71,9 @@ const rectangles = (ctx: CanvasRenderingContext2D) => {
             { x: r.x + r.width, y: r.y },
             { x: r.x + r.width, y: r.y + r.height },
             { x: r.x, y: r.y + r.height },
-        ].map((v) => rotateAround({ x: r.x, y: r.y }, v, r.rotation));
+        ]
+            .map((v) => rotateAround({ x: r.x, y: r.y }, v, r.rotation))
+            .map((v, idx) => randomOffset(v, idx, time));
 
         ctx.beginPath();
         ctx.moveTo(vertices[0].x, vertices[0].y);
@@ -102,7 +95,11 @@ interface Triangle {
 
 type PackedTriangle = [number, number, number, number, number, number, number];
 
-const triangles = (ctx: CanvasRenderingContext2D) => {
+const rotateT = (t: Triangle, angle: number): Triangle => {
+    return t;
+};
+
+const triangles = (ctx: CanvasRenderingContext2D, time: number) => {
     const packed: PackedTriangle[] = [
         [10, 205, 60, 230, 40, 300, 0],
         [40, 240, 10, 270, 50, 280, 0],
@@ -113,7 +110,8 @@ const triangles = (ctx: CanvasRenderingContext2D) => {
 
         [25, 390, 25, 375, 37, 382, 1],
         [20, 390, 30, 385, 29, 396, 0],
-    ];
+        // multiply coordinates by two
+    ].map((p) => p.map((n) => n * 2) as PackedTriangle);
 
     const tris: Triangle[] = packed.map((t) => ({
         v1: { x: t[0], y: t[1] },
@@ -122,8 +120,10 @@ const triangles = (ctx: CanvasRenderingContext2D) => {
         style: t[6],
     }));
 
-    for (let r of tris) {
-        ctx.fillStyle = r.style === 0 ? '#d1ba49' : '#ffd3cc';
+    for (let b of tris) {
+        const r = rotateT(b, time);
+
+        ctx.fillStyle = '#FFF';
 
         ctx.beginPath();
         ctx.moveTo(r.v1.x, r.v1.y);
@@ -154,38 +154,19 @@ const gridLines = (ctx: CanvasRenderingContext2D) => {
     }
 };
 
-interface LineSegment {
-    p1: Coordinate;
-    p2: Coordinate;
-}
-export type PackedLineSegment = [number, number, number, number];
-
-const drawHitboxes = (ctx: CanvasRenderingContext2D) => {
-    const phbs: PackedLineSegment[] = [
-        [300, 50, 100, 290],
-        [300, 130, 140, 310],
-    ];
-
-    const hbs: LineSegment[] = phbs.map((p) => ({
-        p1: { x: p[0], y: p[1] },
-        p2: { x: p[2], y: p[3] },
-    }));
-
-    for (const hb of hbs) {
-        ctx.strokeStyle = 'red';
-        ctx.beginPath();
-        ctx.moveTo(hb.p1.x, hb.p1.y);
-        ctx.lineTo(hb.p2.x, hb.p2.y);
-        ctx.stroke();
-    }
+const clear = (ctx: CanvasRenderingContext2D) => {
+    ctx.clearRect(0, 0, WIDTH, HEIGHT);
 };
 
-export const render = (ctx: CanvasRenderingContext2D) => {
+export const render = (ctx: CanvasRenderingContext2D, timing: number) => {
+    clear(ctx);
     background(ctx);
 
-    rectangles(ctx);
-    triangles(ctx);
+    rectangles(ctx, timing);
+    triangles(ctx, timing);
 
     // drawHitboxes(ctx);
-    gridLines(ctx);
+    // gridLines(ctx);
+
+    window.requestAnimationFrame((timing) => render(ctx, timing));
 };

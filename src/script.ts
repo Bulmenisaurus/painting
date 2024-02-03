@@ -10,9 +10,8 @@ const main = () => {
     const physicsRenderContainer = document.getElementById('physics') as HTMLCanvasElement;
 
     const ctx = canvasElement.getContext('2d')!;
-    // ctx.globalAlpha = 0.5;
 
-    render(ctx);
+    window.requestAnimationFrame((time) => render(ctx, time));
     physics(physicsRenderContainer);
 };
 

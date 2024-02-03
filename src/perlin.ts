@@ -1,4 +1,4 @@
-import { Coordinate } from './script';
+import { Coordinate } from './render';
 
 export class Perlin {
     width: number;
