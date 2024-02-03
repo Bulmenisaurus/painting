@@ -17,11 +17,14 @@ canvas {
 
 #container {
     display: grid;
+    max-height: 100vh;
+    max-width: 100vw;
+    aspect-ratio: 12/17;
 }
 
 #container canvas {
     grid-column-start: 1;
     grid-row-start: 1;
-    width: 300px;
-    height: 425px;
+    width: 100%;
+    height: 100%;
 }
