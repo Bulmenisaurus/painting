@@ -35,7 +35,7 @@ export const physics = (container: HTMLCanvasElement) => {
 
     const runner = Runner.create();
     Runner.run(runner, engine);
-    const stack = Composites.stack(700, -900, 7, 20, 0, 0, (x: number, y: number) => {
+    const stack = Composites.stack(700, -900, 10, 20, 0, 0, (x: number, y: number) => {
         return Bodies.circle(x, y, Common.random(8, 13), {
             friction: 0.00001,
             restitution: 0.5,
@@ -68,12 +68,12 @@ export const physics = (container: HTMLCanvasElement) => {
                 angle: Math.PI * 0.65,
             }),
             // bottom of main tube 3
-            Bodies.rectangle(350, 690, 200, 20, {
+            Bodies.rectangle(360, 690, 230, 20, {
                 isStatic: true,
                 angle: Math.PI * -0.25,
             }),
             // bottom of main tube 4
-            Bodies.rectangle(340, 800, 200, 20, {
+            Bodies.rectangle(345, 810, 170, 20, {
                 isStatic: true,
                 angle: Math.PI * 0.25,
             }),
@@ -144,11 +144,11 @@ export const physics = (container: HTMLCanvasElement) => {
                 angle: Math.PI * 0.5,
             }),
         ]
-        // hide/show hitboxes (for dev)
-        // .map((p) => ((p.render.visible = false), p))
+            // hide/show hitboxes (for dev)
+            .map((p) => ((p.render.visible = false), p))
     );
 
-    Render.lookAt(render, Composite.allBodies(world));
+    // Render.lookAt(render, Composite.allBodies(world));
 
     Events.on(engine, 'collisionStart', (event) => {
         for (const collisionPair of event.pairs) {
